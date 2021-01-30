@@ -1,3 +1,3 @@
-# genetic_algos
+# Genetic Algorithms
 
-Masterful algorithms to win the competition
+Genetic Algorithms in Typescript
