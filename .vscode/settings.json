@@ -3,5 +3,30 @@
   "cSpell.enabled": true,
   "editor.formatOnSave": true,
   "typescript.tsdk": "node_modules/typescript/lib",
-  "typescript.enablePromptUseWorkspaceTsdk": true
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "workbench.colorCustomizations": {
+    "terminal.ansiBlack": "#263238",
+    "terminal.ansiBlue": "#82AAFF",
+    "terminal.ansiBrightBlack": "#546E7A",
+    "terminal.ansiBrightBlue": "#82AAFF",
+    "terminal.ansiBrightCyan": "#89DDFF",
+    "terminal.ansiBrightGreen": "#C3E88D",
+    "terminal.ansiBrightMagenta": "#C792EA",
+    "terminal.ansiBrightRed": "#F07178",
+    "terminal.ansiBrightWhite": "#FFFFFF",
+    "terminal.ansiBrightYellow": "#FFCB6B",
+    "terminal.ansiCyan": "#89DDFF",
+    "terminal.ansiGreen": "#C3E88D",
+    "terminal.ansiMagenta": "#C792EA",
+    "terminal.ansiRed": "#F07178",
+    "terminal.ansiWhite": "#EEFFFF",
+    "terminal.ansiYellow": "#FFCB6B",
+    "terminal.background": "#263238",
+    "terminal.foreground": "#EEFFFF",
+    "terminalCursor.background": "#EEFFFF",
+    "terminalCursor.foreground": "#EEFFFF",
+    "activityBar.background": "#033433",
+    "titleBar.activeBackground": "#054847",
+    "titleBar.activeForeground": "#E8FEFD"
+  }
 }
