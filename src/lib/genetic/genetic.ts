@@ -4,19 +4,16 @@ type Population<Chromosome> = Array<Chromosome>
 
 export type GeneticConfig<Chromosome, FitnessResult> = {
     populationSize: number,
-    maxFitness: FitnessResult,
-
+    
     genotype: () => Chromosome,
     fitnessComparator: (a: Chromosome, b: Chromosome) => number,
     fitnessFunction: (a: Chromosome) => FitnessResult,
-}
 
-type ChromosomeAbilities<Chromosome> = {
-    crossover: (other: Chromosome) => [Chromosome, Chromosome],
-    mutate: () => Chromosome
+    mutate: (a: Chromosome) => Chromosome,
+    crossover: (a: Chromosome, b: Chromosome) => [Chromosome, Chromosome],
+    terminate: (p: Population<Chromosome>) => boolean,
 }
-
-class GeneticFrame<Chromosome extends ChromosomeAbilities<Chromosome>, FitnessResult> {
+class GeneticFrame<Chromosome, FitnessResult> {
     
     private geneticConfig: GeneticConfig<Chromosome, FitnessResult>
 
@@ -31,7 +28,7 @@ class GeneticFrame<Chromosome extends ChromosomeAbilities<Chromosome>, FitnessRe
         return this.evolve(population)
     }
 
-    // PUBLIC
+    // PRIVATE
 
     // 1. Initialize
     private initialize(): Population<Chromosome> {
@@ -42,29 +39,6 @@ class GeneticFrame<Chromosome extends ChromosomeAbilities<Chromosome>, FitnessRe
         }
 
         return population
-    }
-
-    private evolve(population: Population<Chromosome>): Chromosome {
-        
-        const evaluatedPopulation = this.evaluate(population)
-        const bestChromosome = evaluatedPopulation[0]
-        const bestResult = this.geneticConfig.fitnessFunction(bestChromosome)
-
-        if (this.geneticConfig.maxFitness === bestResult) {
-            return bestChromosome
-        } else {
-            // selection
-            const selected = this.select(evaluatedPopulation)
-
-            // crossover
-            const newChildren = this.crossover(selected)
-
-            // mutate
-            const mutatedPopulation = this.mutate(newChildren)
-
-            // algorithm again
-            return this.evolve(mutatedPopulation)
-        }
     }
 
     // 2. Evaluate
@@ -88,7 +62,7 @@ class GeneticFrame<Chromosome extends ChromosomeAbilities<Chromosome>, FitnessRe
     private crossover(selectedPairs: Array<[Chromosome, Chromosome]>): Population<Chromosome> {
         return selectedPairs.reduce((currentPopulation: Population<Chromosome>, nextTuple: [Chromosome, Chromosome]) => {
             const [p1, p2] = nextTuple
-            const [c1, c2] = p1.crossover(p2)
+            const [c1, c2] = this.geneticConfig.crossover(p1, p2)
     
             currentPopulation.push(c1)
             currentPopulation.push(c2)
@@ -102,11 +76,31 @@ class GeneticFrame<Chromosome extends ChromosomeAbilities<Chromosome>, FitnessRe
         return population.map((chromosome: Chromosome) => {
             // 5% chance of getting mutated
             if (getRandomNumberBetween(0, 100) < 5) {
-                return chromosome.mutate()
+                return this.geneticConfig.mutate(chromosome)
             } else {
                 return chromosome
             }
         })
+    }
+
+    private evolve(population: Population<Chromosome>): Chromosome {
+        const evaluatedPopulation = this.evaluate(population)
+
+        if (this.geneticConfig.terminate(evaluatedPopulation)) {
+            return evaluatedPopulation[0]
+        } else {
+            // selection
+            const selected = this.select(evaluatedPopulation)
+
+            // crossover
+            const newChildren = this.crossover(selected)
+
+            // mutate
+            const mutatedPopulation = this.mutate(newChildren)
+
+            // algorithm again
+            return this.evolve(mutatedPopulation)
+        }
     }
 }
 
