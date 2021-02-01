@@ -17,7 +17,11 @@ function findMax(arr: Array<Array<number>>, apply: (a: Array<number>) => number)
 }
 
 function getRandomNumberBetween(start: number, end: number): number {
-  return Math.floor(Math.random() * (end + 1)) + start
+  return Math.floor(Math.random() * (end - start + 1) + start);
+}
+
+function getRandomLowerChar() {
+  return String.fromCharCode(getRandomNumberBetween(97, 122))
 }
 
 function splitArrayIntoTwo(arr: Array<number>, splitIndex: number): [Array<number>, Array<number>] {
@@ -42,4 +46,5 @@ export {
   getRandomNumberBetween,
   splitArrayIntoTwo,
   shuffleArray,
+  getRandomLowerChar,
 }

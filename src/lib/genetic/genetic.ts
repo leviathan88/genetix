@@ -1,8 +1,15 @@
 import { getRandomNumberBetween } from '../helpers/utils'
 
-type Population<Chromosome> = Array<Chromosome>
+export type Chromosome = {
+    genes: Array<any>,
+    size: number
+    fitness: number
+    age: number
+}
 
-export type GeneticConfig<Chromosome, FitnessResult> = {
+type Population = Array<Chromosome>
+
+export type GeneticConfig<FitnessResult> = {
     populationSize: number,
     
     genotype: () => Chromosome,
@@ -11,27 +18,27 @@ export type GeneticConfig<Chromosome, FitnessResult> = {
 
     mutate: (a: Chromosome) => Chromosome,
     crossover: (a: Chromosome, b: Chromosome) => [Chromosome, Chromosome],
-    terminate: (p: Population<Chromosome>) => boolean,
+    terminate: (p: Population, generation: number) => boolean,
 }
-class GeneticFrame<Chromosome, FitnessResult> {
+export class GeneticFrame<FitnessResult> {
     
-    private geneticConfig: GeneticConfig<Chromosome, FitnessResult>
+    private geneticConfig: GeneticConfig<FitnessResult>
 
     // 1. Initialize
-    constructor(geneticConfig: GeneticConfig<Chromosome, FitnessResult>) {
+    constructor(geneticConfig: GeneticConfig<FitnessResult>) {
         this.geneticConfig = geneticConfig
     }
 
     // PUBLIC
     run(): Chromosome {
         const population = this.initialize()
-        return this.evolve(population)
+        return this.evolve(population, 0)
     }
 
     // PRIVATE
 
     // 1. Initialize
-    private initialize(): Population<Chromosome> {
+    private initialize(): Population {
         const population = []
 
         for (let i = 0; i < this.geneticConfig.populationSize; i++) {
@@ -42,12 +49,14 @@ class GeneticFrame<Chromosome, FitnessResult> {
     }
 
     // 2. Evaluate
-    private evaluate(population: Population<Chromosome>): Population<Chromosome> {
-        return population.sort(this.geneticConfig.fitnessComparator)
+    private evaluate(population: Population): Population {
+        return population
+            .map(c => Object.assign({}, c, { fitness: this.geneticConfig.fitnessFunction(c), age: c.age + 1 }))
+            .sort(this.geneticConfig.fitnessComparator)
     }
 
     // 3. Selection
-    private select(population: Population<Chromosome>): Array<[Chromosome, Chromosome]> {
+    private select(population: Population): Array<[Chromosome, Chromosome]> {
         return population.reduce((currentPopulation: Array<[Chromosome, Chromosome]>, nextChromosome: Chromosome, index: number) => {
             if (index % 2 === 0) {
                 currentPopulation.push([nextChromosome, population[index + 1]])
@@ -59,8 +68,8 @@ class GeneticFrame<Chromosome, FitnessResult> {
     }
 
     // 4. Crossover
-    private crossover(selectedPairs: Array<[Chromosome, Chromosome]>): Population<Chromosome> {
-        return selectedPairs.reduce((currentPopulation: Population<Chromosome>, nextTuple: [Chromosome, Chromosome]) => {
+    private crossover(selectedPairs: Array<[Chromosome, Chromosome]>): Population {
+        return selectedPairs.reduce((currentPopulation: Population, nextTuple: [Chromosome, Chromosome]) => {
             const [p1, p2] = nextTuple
             const [c1, c2] = this.geneticConfig.crossover(p1, p2)
     
@@ -72,7 +81,7 @@ class GeneticFrame<Chromosome, FitnessResult> {
     }
 
     // 5. Mutation
-    private mutate(population: Population<Chromosome>): Population<Chromosome> {
+    private mutate(population: Population): Population {
         return population.map((chromosome: Chromosome) => {
             // 5% chance of getting mutated
             if (getRandomNumberBetween(0, 100) < 5) {
@@ -83,10 +92,10 @@ class GeneticFrame<Chromosome, FitnessResult> {
         })
     }
 
-    private evolve(population: Population<Chromosome>): Chromosome {
+    private evolve(population: Population, generation: number): Chromosome {
         const evaluatedPopulation = this.evaluate(population)
 
-        if (this.geneticConfig.terminate(evaluatedPopulation)) {
+        if (this.geneticConfig.terminate(evaluatedPopulation, generation)) {
             return evaluatedPopulation[0]
         } else {
             // selection
@@ -99,9 +108,9 @@ class GeneticFrame<Chromosome, FitnessResult> {
             const mutatedPopulation = this.mutate(newChildren)
 
             // algorithm again
-            return this.evolve(mutatedPopulation)
+            return this.evolve(mutatedPopulation, generation + 1)
         }
     }
 }
 
-export default GeneticFrame
+

@@ -1,5 +1,5 @@
 import test from 'ava'
-import { findMax, getRandomNumberBetween, shuffleArray, splitArrayIntoTwo, sumItems } from './utils';
+import { findMax, getRandomLowerChar, getRandomNumberBetween, shuffleArray, splitArrayIntoTwo, sumItems } from './utils';
 
 
 test('test getRandomNumberBetween', (t) => {
@@ -9,6 +9,15 @@ test('test getRandomNumberBetween', (t) => {
     t.assert(r1 >= 0 && r1 <= 10)
     t.assert(r2 >= 0 && r2 <= 10)
     t.assert(r3 >= 0 && r3 <= 10)
+})
+
+test('test getRandomLowerChar', (t) => {
+    const c1 = getRandomLowerChar()
+    const c2 = getRandomLowerChar()
+    const c3 = getRandomLowerChar()
+    t.assert(c1 >= 'a' && c1 <= 'z')
+    t.assert(c2 >= 'a' && c2 <= 'z')
+    t.assert(c3 >= 'a' && c3 <= 'z')
 })
 
 test('test splitArrayIntoTwo', (t) => {
