@@ -1,3 +1,5 @@
-# Genetic Algorithms
+# Framework for Genetic Algorithms
 
-Genetic Algorithms in Typescript
+### Work in progress
+
+### Documentation coming soon
