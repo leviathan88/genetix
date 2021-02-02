@@ -1,6 +1,5 @@
 import { Population } from "../genetic/genetic"
 import { shuffleArray } from "../helpers/utils"
-
 export class ToolboxSelection {
     public static elite(population: Population, size: number): [Population, Population] {
         const selectedParents = population.slice(0, size)

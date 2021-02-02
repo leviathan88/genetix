@@ -1,5 +1,5 @@
 {
-  "name": "genetic_algos",
+  "name": "genetix",
   "version": "1.0.0",
   "description": "Masterful algorithms to win the competition",
   "main": "build/main/index.js",
