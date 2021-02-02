@@ -1,4 +1,5 @@
 import { getRandomNumberBetween } from '../helpers/utils'
+import { ToolboxSelection } from '../toolbox/ToolboxSelection'
 
 export type Chromosome = {
     genes: Array<any>,
@@ -7,18 +8,27 @@ export type Chromosome = {
     age: number
 }
 
-type Population = Array<Chromosome>
+export type Population = Array<Chromosome>
 
 export type GeneticConfig<FitnessResult> = {
-    populationSize: number,
+    populationSize: number,    
+    selectionRate?: number,    
     
     genotype: () => Chromosome,
+
+    selectionFunction?: (population: Population, size: number) => [Population, Population],
+
     fitnessComparator: (a: Chromosome, b: Chromosome) => number,
     fitnessFunction: (a: Chromosome) => FitnessResult,
 
     mutate: (a: Chromosome) => Chromosome,
     crossover: (a: Chromosome, b: Chromosome) => [Chromosome, Chromosome],
     terminate: (p: Population, generation: number) => boolean,
+}
+
+type SelectionType = {
+    selectedParents: Array<[Chromosome, Chromosome]>,
+    leftovers: Population
 }
 export class GeneticFrame<FitnessResult> {
     
@@ -56,8 +66,13 @@ export class GeneticFrame<FitnessResult> {
     }
 
     // 3. Selection
-    private select(population: Population): Array<[Chromosome, Chromosome]> {
-        return population.reduce((currentPopulation: Array<[Chromosome, Chromosome]>, nextChromosome: Chromosome, index: number) => {
+    private select(population: Population): SelectionType {
+        const populationSize = this.getNewPopulationSize(population)
+        const selectFn: (p: Population, n: number) => [Population, Population] = this.geneticConfig.selectionFunction || ToolboxSelection.elite
+
+        const [ parents, leftovers ] = selectFn(population, populationSize)
+
+        const selectedParents = parents.reduce((currentPopulation: Array<[Chromosome, Chromosome]>, nextChromosome: Chromosome, index: number) => {
             if (index % 2 === 0) {
                 currentPopulation.push([nextChromosome, population[index + 1]])
                 return currentPopulation
@@ -65,6 +80,11 @@ export class GeneticFrame<FitnessResult> {
                 return currentPopulation
             }
         }, [])
+
+        return {
+            selectedParents,
+            leftovers
+        }
     }
 
     // 4. Crossover
@@ -99,17 +119,23 @@ export class GeneticFrame<FitnessResult> {
             return evaluatedPopulation[0]
         } else {
             // selection
-            const selected = this.select(evaluatedPopulation)
+            const { selectedParents, leftovers } = this.select(evaluatedPopulation)
 
             // crossover
-            const newChildren = this.crossover(selected)
+            const newChildren = this.crossover(selectedParents)
 
             // mutate
-            const mutatedPopulation = this.mutate(newChildren)
+            const mutatedPopulation = this.mutate([...newChildren, ...leftovers])
 
             // algorithm again
             return this.evolve(mutatedPopulation, generation + 1)
         }
+    }
+
+    private getNewPopulationSize(population: Population): number {
+        const selectRate = this.geneticConfig.selectionRate || 0.8
+        const n = Math.round(population.length * selectRate)
+        return n % 2 == 0 ? n : n + 1
     }
 }
 
